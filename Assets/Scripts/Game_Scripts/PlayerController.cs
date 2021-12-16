@@ -10,15 +10,17 @@ public class PlayerController : MonoBehaviour
 
     public float jumpForce = 100f;
     private bool isGrounded = true;
-
     private bool isTuring = false;
     private Quaternion start;
     private Quaternion end;
     private float rate;
     private float time = 0;
 
+    private Animator playerAnim;
+
     private void Start() {
         rate = 1 / duration;
+        playerAnim = gameObject.GetComponent<Animator>();
     }
     private void Update() {
         if (isTuring) {
@@ -45,12 +47,16 @@ public class PlayerController : MonoBehaviour
         else if(Input.GetKeyDown(KeyCode.W) && isGrounded) {
             gameObject.GetComponent<Rigidbody>().AddForce(jumpForce * Vector3.up);
             isGrounded = false;
+
+            playerAnim.SetBool("isGrounded", false);
         }
     }
 
     private void OnCollisionEnter(Collision collision) {
         if(collision.collider.CompareTag("Ground")) {
             isGrounded = true;
+            
+            playerAnim.SetBool("isGrounded", true);
         }
     }
 
