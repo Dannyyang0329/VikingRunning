@@ -4,46 +4,102 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Move Speed")]
     public float movingSpeed = 15f;
 
-    public float duration = 0.2f;
 
+    [Header("Jump")]
     public float jumpForce = 100f;
-    private bool isGrounded = true;
-    private bool isTuring = false;
-    private Quaternion start;
-    private Quaternion end;
-    private float rate;
-    private float time = 0;
+    public bool isGrounded = true;
 
+
+    [Header("Turn Around")]
+    public float turningDuration = 0.2f;
+    public bool isTurning = false;
+
+    private Quaternion turnStart;
+    private Quaternion turnEnd;
+    private float turningRate;
+    private float turningTime = 0;
+
+
+    [Header("Position")]
+    public float roadWidth;
+    public bool isOnLeftRoad = false;
+    public bool isOnMiddleRoad = true;
+    public bool isOnRightRoad = false;
+
+    public float movingDuration = 0.5f;
+    public bool isSwitching = false;
+    private Vector3 moveStart;
+    private Vector3 moveEnd;
+    private float movingRate;
+    private float movingTime = 0;
+
+    
     private Animator playerAnim;
 
-    private void Start() {
-        rate = 1 / duration;
+    private void Start() 
+    {
         playerAnim = gameObject.GetComponent<Animator>();
-    }
-    private void Update() {
-        if (isTuring) {
-            time += rate * Time.deltaTime;
-            transform.rotation = Quaternion.Slerp(start, end, time);
 
-            if(time > 1.0f) {
-                transform.rotation = Quaternion.Slerp(start, end, 1);
-                isTuring = false;
+        turningRate = 1 / turningDuration;
+        movingRate = 1 / movingDuration;
+    }
+
+    private void Update() 
+    {
+        // turning around
+        if (isTurning) {
+            turningTime += turningRate * Time.deltaTime;
+            transform.rotation = Quaternion.Slerp(turnStart, turnEnd, turningTime);
+
+            if(turningTime > 1.0f) {
+                transform.rotation = Quaternion.Slerp(turnStart, turnEnd, 1);
+                isTurning = false;
             }
         }
-        else time = 0;
+        else turningTime = 0;
 
-        transform.Translate(Vector3.forward * movingSpeed * Time.deltaTime);            
+        // switching road
+        if (isSwitching) {
+            movingTime += movingRate * Time.deltaTime;
+            transform.position = Vector3.Lerp(moveStart, moveEnd, movingTime);
 
-        if(Input.GetKeyDown(KeyCode.A)) {
-            SetRotateStatus(true);
-            isTuring = true;
+            if(movingTime > 1.0f) {
+                transform.position = Vector3.Lerp(moveStart, moveEnd, 1);
+                isSwitching = false;
+            }
         }
-        else if(Input.GetKeyDown(KeyCode.D)) {
-            SetRotateStatus(false);
-            isTuring = true;
+        else movingTime = 0;
+
+        // moving forward in a constant speed
+        if(!isSwitching)
+            transform.Translate(Vector3.forward * movingSpeed * Time.deltaTime);            
+
+        // move to left road or turning left
+        if(Input.GetKeyDown(KeyCode.A) && !isTurning && !isSwitching) {
+            if(isOnLeftRoad) {
+                SetRotateStatus(true);
+                isTurning = true;
+            }
+            else {
+                MovingToNextRoad("Left");
+                isSwitching = true;
+            }
         }
+        // move to right road or turning right
+        else if(Input.GetKeyDown(KeyCode.D) && !isTurning && !isSwitching) {
+            if(isOnRightRoad) {
+                SetRotateStatus(false);
+                isTurning = true;
+            }
+            else {
+                MovingToNextRoad("Right");
+                isSwitching = true;
+            }
+        }
+        // jumping
         else if(Input.GetKeyDown(KeyCode.W) && isGrounded) {
             gameObject.GetComponent<Rigidbody>().AddForce(jumpForce * Vector3.up);
             isGrounded = false;
@@ -52,7 +108,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter(Collision collision) {
+    private void OnCollisionEnter(Collision collision) 
+    {
         if(collision.collider.CompareTag("Ground")) {
             isGrounded = true;
             
@@ -60,12 +117,60 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void SetRotateStatus(bool isTuringLeft) {
+    void SetRotateStatus(bool isTurningLeft) 
+    {
         Vector3 degree;
-        if (isTuringLeft) degree = new Vector3(0, -90,  0);
+        if (isTurningLeft) degree = new Vector3(0, -90,  0);
         else degree = new Vector3(0, 90,  0);
 
-        start = transform.rotation;
-        end = start * Quaternion.Euler(degree);
+        turnStart = transform.rotation;
+        turnEnd = turnStart * Quaternion.Euler(degree);
+    }
+
+    void SetSwitchStatus(bool isMovingLeft) 
+    {
+        Vector3 dir;
+        if (isMovingLeft) 
+            dir = Vector3.left * roadWidth + Vector3.forward * (movingSpeed * movingDuration);
+        else 
+            dir = Vector3.right * roadWidth + Vector3.forward * (movingSpeed * movingDuration);
+
+        moveStart = transform.position;
+        moveEnd = moveStart + dir;
+    }
+
+    void SetPosition(string name) 
+    {
+        if(name == "Left") {
+            isOnLeftRoad = true;
+            isOnMiddleRoad = false;
+            isOnRightRoad = false;
+        }
+        else if(name == "Middle") {
+            isOnLeftRoad = false;
+            isOnMiddleRoad = true;
+            isOnRightRoad = false;
+        }
+        else if(name == "Right") {
+            isOnLeftRoad = false;
+            isOnMiddleRoad = false;
+            isOnRightRoad = true;
+        }
+    }
+
+    void MovingToNextRoad(string dir) 
+    {
+        if(dir == "Left") {
+            if (isOnRightRoad) SetPosition("Middle");
+            else if (isOnMiddleRoad) SetPosition("Left");
+
+            SetSwitchStatus(true);
+        }
+        else if(dir == "Right") {
+            if (isOnLeftRoad) SetPosition("Middle");
+            else if (isOnMiddleRoad) SetPosition("Right");
+
+            SetSwitchStatus(false);
+        }
     }
 }
