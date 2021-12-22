@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -28,6 +26,7 @@ public class PlayerController : MonoBehaviour
     public bool isOnLeftRoad = false;
     public bool isOnMiddleRoad = true;
     public bool isOnRightRoad = false;
+    public bool isInTurningArea = false;
 
     public float movingDuration = 0.5f;
     public bool isSwitching = false;
@@ -38,6 +37,8 @@ public class PlayerController : MonoBehaviour
 
     
     private Animator playerAnim;
+
+    private Collider turningArea;
 
     private void Start() 
     {
@@ -74,14 +75,19 @@ public class PlayerController : MonoBehaviour
         else movingTime = 0;
 
         // moving forward in a constant speed
-        if(!isSwitching)
+        if(!isSwitching && !isTurning)
             transform.Translate(Vector3.forward * movingSpeed * Time.deltaTime);            
+            //transform.Translate(transform.forward * movingSpeed * Time.deltaTime);
 
         // move to left road or turning left
         if(Input.GetKeyDown(KeyCode.A) && !isTurning && !isSwitching) {
-            if(isOnLeftRoad) {
+            if(isOnLeftRoad && isInTurningArea) {
+                SetRotatePos();
                 SetRotateStatus(true);
                 isTurning = true;
+            }
+            else if(isOnLeftRoad){
+                Debug.Log("can't left");
             }
             else {
                 MovingToNextRoad("Left");
@@ -90,9 +96,13 @@ public class PlayerController : MonoBehaviour
         }
         // move to right road or turning right
         else if(Input.GetKeyDown(KeyCode.D) && !isTurning && !isSwitching) {
-            if(isOnRightRoad) {
+            if(isOnRightRoad && isInTurningArea) {
+                SetRotatePos();
                 SetRotateStatus(false);
                 isTurning = true;
+            }
+            else if(isOnRightRoad) {
+                Debug.Log("cant't right");
             }
             else {
                 MovingToNextRoad("Right");
@@ -117,6 +127,19 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void OnTriggerEnter(Collider other) {
+        if(other.CompareTag("TurningArea")) {
+            isInTurningArea = true;
+            turningArea = other;
+        }
+    }
+    private void OnTriggerExit(Collider other) {
+        if(other.CompareTag("TurningArea")) {
+            isInTurningArea = false;
+            turningArea = null;
+        }
+    }
+
     void SetRotateStatus(bool isTurningLeft) 
     {
         Vector3 degree;
@@ -130,10 +153,12 @@ public class PlayerController : MonoBehaviour
     void SetSwitchStatus(bool isMovingLeft) 
     {
         Vector3 dir;
-        if (isMovingLeft) 
-            dir = Vector3.left * roadWidth + Vector3.forward * (movingSpeed * movingDuration);
-        else 
-            dir = Vector3.right * roadWidth + Vector3.forward * (movingSpeed * movingDuration);
+        if (isMovingLeft)
+            //dir = Vector3.left * roadWidth + Vector3.forward * (movingSpeed * movingDuration);
+            dir = -transform.right * roadWidth + transform.forward * (movingSpeed * movingDuration);
+        else
+            //dir = Vector3.right * roadWidth + Vector3.forward * (movingSpeed * movingDuration);
+            dir = transform.right * roadWidth + transform.forward * (movingSpeed * movingDuration);
 
         moveStart = transform.position;
         moveEnd = moveStart + dir;
@@ -172,5 +197,34 @@ public class PlayerController : MonoBehaviour
 
             SetSwitchStatus(false);
         }
+    }
+
+    void SetRotatePos() 
+    {
+        Vector3 middlePos = turningArea.transform.Find("middlePos").position;
+        Vector3 leftPos = turningArea.transform.Find("leftPos").position;
+        Vector3 rightPos = turningArea.transform.Find("rightPos").position;
+        Vector3 pos = Vector3.zero;
+
+        float leftDis = (leftPos - transform.position).magnitude;
+        float middleDis = (middlePos - transform.position).magnitude;
+        float rightDis = (rightPos - transform.position).magnitude;
+
+        if (middleDis <= leftDis && middleDis <= rightDis) {
+            pos = middlePos;
+            SetPosition("Middle");
+        }
+        else if (rightDis <= leftDis && rightDis <= middleDis) {
+            pos = rightPos;
+            SetPosition("Right");
+        }
+        else if (leftDis <= rightDis && leftDis <= middleDis) {
+            pos = leftPos;
+            SetPosition("Left");
+        }
+        
+        Vector3 newPos = new Vector3(pos.x, transform.position.y, pos.z);
+
+        transform.position = newPos;
     }
 }
