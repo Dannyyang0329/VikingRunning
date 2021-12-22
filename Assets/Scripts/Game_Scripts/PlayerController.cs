@@ -4,6 +4,8 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Move Speed")]
     public float movingSpeed = 15f;
+    public float inputCoolDown = 0.5f;
+    public bool isCoolDown = false;
 
 
     [Header("Jump")]
@@ -11,7 +13,7 @@ public class PlayerController : MonoBehaviour
     public bool isGrounded = true;
 
 
-    [Header("Turn Around")]
+    [Header("Turn a round")]
     public float turningDuration = 0.2f;
     public bool isTurning = false;
 
@@ -36,6 +38,8 @@ public class PlayerController : MonoBehaviour
     private float movingTime = 0;
 
     
+    public AudioManager audioManager;
+
     private Animator playerAnim;
 
     private Collider turningArea;
@@ -58,6 +62,7 @@ public class PlayerController : MonoBehaviour
             if(turningTime > 1.0f) {
                 transform.rotation = Quaternion.Slerp(turnStart, turnEnd, 1);
                 isTurning = false;
+                Invoke("CoolDownEnd", inputCoolDown);
             }
         }
         else turningTime = 0;
@@ -70,6 +75,7 @@ public class PlayerController : MonoBehaviour
             if(movingTime > 1.0f) {
                 transform.position = Vector3.Lerp(moveStart, moveEnd, 1);
                 isSwitching = false;
+                Invoke("CoolDownEnd", inputCoolDown);
             }
         }
         else movingTime = 0;
@@ -80,11 +86,12 @@ public class PlayerController : MonoBehaviour
             //transform.Translate(transform.forward * movingSpeed * Time.deltaTime);
 
         // move to left road or turning left
-        if(Input.GetKeyDown(KeyCode.A) && !isTurning && !isSwitching) {
+        if(Input.GetKeyDown(KeyCode.A) && !isTurning && !isSwitching && !isCoolDown) {
             if(isOnLeftRoad && isInTurningArea) {
                 SetRotatePos();
                 SetRotateStatus(true);
                 isTurning = true;
+                isCoolDown = true;
             }
             else if(isOnLeftRoad){
                 Debug.Log("can't left");
@@ -92,14 +99,16 @@ public class PlayerController : MonoBehaviour
             else {
                 MovingToNextRoad("Left");
                 isSwitching = true;
+                isCoolDown = true;
             }
         }
         // move to right road or turning right
-        else if(Input.GetKeyDown(KeyCode.D) && !isTurning && !isSwitching) {
+        else if(Input.GetKeyDown(KeyCode.D) && !isTurning && !isSwitching && !isCoolDown) {
             if(isOnRightRoad && isInTurningArea) {
                 SetRotatePos();
                 SetRotateStatus(false);
                 isTurning = true;
+                isCoolDown = true;
             }
             else if(isOnRightRoad) {
                 Debug.Log("cant't right");
@@ -107,6 +116,7 @@ public class PlayerController : MonoBehaviour
             else {
                 MovingToNextRoad("Right");
                 isSwitching = true;
+                isCoolDown = true;
             }
         }
         // jumping
@@ -114,6 +124,7 @@ public class PlayerController : MonoBehaviour
             gameObject.GetComponent<Rigidbody>().AddForce(jumpForce * Vector3.up);
             isGrounded = false;
 
+            audioManager.Play("Jump");
             playerAnim.SetBool("isGrounded", false);
         }
     }
@@ -131,6 +142,11 @@ public class PlayerController : MonoBehaviour
         if(other.CompareTag("TurningArea")) {
             isInTurningArea = true;
             turningArea = other;
+        }
+        else if(other.CompareTag("coin")) {
+            audioManager.Stop("CoinSound");
+            audioManager.Play("CoinSound");
+            Destroy(other.gameObject);
         }
     }
     private void OnTriggerExit(Collider other) {
@@ -226,5 +242,10 @@ public class PlayerController : MonoBehaviour
         Vector3 newPos = new Vector3(pos.x, transform.position.y, pos.z);
 
         transform.position = newPos;
+    }
+
+    void CoolDownEnd() 
+    {
+        isCoolDown = false;
     }
 }

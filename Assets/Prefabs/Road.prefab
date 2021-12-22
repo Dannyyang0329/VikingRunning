@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3708201150635063918}
   - component: {fileID: 8342545031792688425}
   - component: {fileID: 8407555293975705935}
+  - component: {fileID: 2281896933894323595}
   m_Layer: 0
   m_Name: Road
   m_TagString: Ground
@@ -95,3 +96,20 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2281896933894323595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6806861524651574135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 145219928e50fc94991e24e19482185d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  coin: {fileID: 274656794499012464, guid: 8f7dac7112f34814a936642e6da2113a, type: 3}
+  spawnPossibility: 0.18
+  canSpawnCoin: 1
+  obstacles: []
+  canSpawnObstacle: 0
