@@ -446,8 +446,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blocks:
-  - {fileID: 4768783089653471928, guid: 87068dd66d040324ba0388609c2f2041, type: 3}
-  - {fileID: 5396773983765689872, guid: 0a5d53657311f364f826a2daaab3fc78, type: 3}
+  - {fileID: 4768783089653471928, guid: 346b11e73eb251f4e88b7d420ade2555, type: 3}
   audioManager: {fileID: 117951784}
 --- !u!1001 &3056240465395446188
 PrefabInstance:
@@ -522,7 +521,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3056240465097977870, guid: f9a4c0a6795411f488985efe5c2f6f4d, type: 3}
       propertyPath: movingSpeed
-      value: 15
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 3056240465097977870, guid: f9a4c0a6795411f488985efe5c2f6f4d, type: 3}
       propertyPath: audioManager
@@ -530,7 +529,7 @@ PrefabInstance:
       objectReference: {fileID: 117951784}
     - target: {fileID: 3056240465097977870, guid: f9a4c0a6795411f488985efe5c2f6f4d, type: 3}
       propertyPath: inputCoolDown
-      value: 0.2
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 3056240465097977870, guid: f9a4c0a6795411f488985efe5c2f6f4d, type: 3}
       propertyPath: movingDuration
@@ -635,7 +634,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5370729548812106832, guid: 0a5d53657311f364f826a2daaab3fc78, type: 3}
       propertyPath: eclipseTime
-      value: 18
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 5396773983765689872, guid: 0a5d53657311f364f826a2daaab3fc78, type: 3}
       propertyPath: m_Name
