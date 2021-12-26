@@ -4,6 +4,8 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Move Speed")]
     public float movingSpeed = 15f;
+    public float movingUp = 4f;
+    private float cnt = 0;
     public float inputCoolDown = 0.5f;
     public bool isCoolDown = false;
 
@@ -37,8 +39,10 @@ public class PlayerController : MonoBehaviour
     private float movingRate;
     private float movingTime = 0;
 
+    public bool isDead = false;
     
     public AudioManager audioManager;
+    public GameManager gameManager;
 
     private Animator playerAnim;
 
@@ -55,7 +59,7 @@ public class PlayerController : MonoBehaviour
     private void Update() 
     {
         // turning around
-        if (isTurning) {
+        if (isTurning && !isDead) {
             turningTime += turningRate * Time.deltaTime;
             transform.rotation = Quaternion.Slerp(turnStart, turnEnd, turningTime);
 
@@ -68,7 +72,7 @@ public class PlayerController : MonoBehaviour
         else turningTime = 0;
 
         // switching road
-        if (isSwitching) {
+        if (isSwitching && !isDead) {
             movingTime += movingRate * Time.deltaTime;
             transform.position = Vector3.Lerp(moveStart, moveEnd, movingTime);
 
@@ -80,13 +84,17 @@ public class PlayerController : MonoBehaviour
         }
         else movingTime = 0;
 
+        if (GameManager.survivalTime / 10 >= cnt) {
+            movingSpeed += movingUp;
+            cnt++;
+        }
         // moving forward in a constant speed
-        if(!isSwitching && !isTurning)
+        if(!isSwitching && !isTurning && !isDead)
             transform.Translate(Vector3.forward * movingSpeed * Time.deltaTime);            
             //transform.Translate(transform.forward * movingSpeed * Time.deltaTime);
 
         // move to left road or turning left
-        if(Input.GetKeyDown(KeyCode.A) && !isTurning && !isSwitching && !isCoolDown) {
+        if(Input.GetKeyDown(KeyCode.A) && !isTurning && !isSwitching && !isCoolDown && !isDead) {
             if(isOnLeftRoad && isInTurningArea) {
                 SetRotatePos();
                 SetRotateStatus(true);
@@ -103,7 +111,7 @@ public class PlayerController : MonoBehaviour
             }
         }
         // move to right road or turning right
-        else if(Input.GetKeyDown(KeyCode.D) && !isTurning && !isSwitching && !isCoolDown) {
+        else if(Input.GetKeyDown(KeyCode.D) && !isTurning && !isSwitching && !isCoolDown && !isDead) {
             if(isOnRightRoad && isInTurningArea) {
                 SetRotatePos();
                 SetRotateStatus(false);
@@ -120,7 +128,7 @@ public class PlayerController : MonoBehaviour
             }
         }
         // jumping
-        else if(Input.GetKeyDown(KeyCode.W) && isGrounded) {
+        else if(Input.GetKeyDown(KeyCode.W) && isGrounded && !isDead) {
             gameObject.GetComponent<Rigidbody>().AddForce(jumpForce * Vector3.up);
             isGrounded = false;
 
@@ -136,6 +144,13 @@ public class PlayerController : MonoBehaviour
             
             playerAnim.SetBool("isGrounded", true);
         }
+
+        if(collision.collider.CompareTag("Obstacle")) {
+            isDead = true;
+            playerAnim.SetBool("isDead", true);
+            Catch();
+            Invoke("Gameover", 3);
+        }
     }
 
     private void OnTriggerEnter(Collider other) {
@@ -143,7 +158,7 @@ public class PlayerController : MonoBehaviour
             isInTurningArea = true;
             turningArea = other;
         }
-        else if(other.CompareTag("coin")) {
+        if(other.CompareTag("coin")) {
             GameManager.coinN += 1;
             audioManager.Stop("CoinSound");
             audioManager.Play("CoinSound");
@@ -248,5 +263,20 @@ public class PlayerController : MonoBehaviour
     void CoolDownEnd() 
     {
         isCoolDown = false;
+    }
+
+    void Catch() 
+    {
+        GameObject Ghoul = GameObject.Find("Player/Ghoul");
+
+        Ghoul.transform.position += Vector3.forward * 5;
+        Ghoul.GetComponent<Animation>().Stop();
+        Ghoul.GetComponent<Animation>().Play("Attack2");
+        Ghoul.GetComponent<Animation>().PlayQueued("Idle", QueueMode.CompleteOthers);
+    }
+
+    void Gameover() {
+        Time.timeScale = 0;
+        gameManager.gameover.SetActive(true);
     }
 }
