@@ -53,15 +53,16 @@
     <UnityVersion>2020.3.17f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Game_Scripts\ItemSpawner.cs" />
     <Compile Include="Assets\Scripts\Menu_Scripts\AudioManager.cs" />
+    <Compile Include="Assets\Scripts\Game_Scripts\SetNextSpawnPos.cs" />
     <Compile Include="Assets\Scripts\Game_Scripts\PlayerController.cs" />
     <Compile Include="Assets\Scripts\Menu_Scripts\Sound.cs" />
-    <Compile Include="Assets\Scripts\Menu_Scripts\MainMenuController.cs" />
-    <Compile Include="Assets\Scripts\Game_Scripts\ItemSpawner.cs" />
     <Compile Include="Assets\Scripts\Game_Scripts\CoinSpinning.cs" />
-    <Compile Include="Assets\Scripts\Game_Scripts\GameManager.cs" />
-    <Compile Include="Assets\Scripts\Game_Scripts\SetNextSpawnPos.cs" />
     <Compile Include="Assets\Scripts\Game_Scripts\Eclipse.cs" />
+    <Compile Include="Assets\Scripts\Menu_Scripts\MainMenuController.cs" />
+    <Compile Include="Assets\Scripts\Game_Scripts\GameManager.cs" />
+    <Compile Include="Assets\Scripts\Game_Scripts\ObstacleSpawning.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\ImportPackages\DavePixel\ReadMe!.rtf.txt" />

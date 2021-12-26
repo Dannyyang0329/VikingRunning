@@ -144,6 +144,7 @@ public class PlayerController : MonoBehaviour
             turningArea = other;
         }
         else if(other.CompareTag("coin")) {
+            GameManager.coinN += 1;
             audioManager.Stop("CoinSound");
             audioManager.Play("CoinSound");
             Destroy(other.gameObject);
