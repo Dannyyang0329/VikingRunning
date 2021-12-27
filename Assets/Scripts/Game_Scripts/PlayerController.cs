@@ -6,8 +6,6 @@ public class PlayerController : MonoBehaviour
     public float movingSpeed = 15f;
     public float movingUp = 4f;
     private float cnt = 0;
-    public float inputCoolDown = 0.5f;
-    public bool isCoolDown = false;
 
 
     [Header("Jump")]
@@ -18,6 +16,8 @@ public class PlayerController : MonoBehaviour
     [Header("Turn a round")]
     public float turningDuration = 0.2f;
     public bool isTurning = false;
+    public float inputCoolDown = 0.5f;
+    public bool isCoolDown = false;
 
     private Quaternion turnStart;
     private Quaternion turnEnd;
@@ -79,7 +79,6 @@ public class PlayerController : MonoBehaviour
             if(movingTime > 1.0f) {
                 transform.position = Vector3.Lerp(moveStart, moveEnd, 1);
                 isSwitching = false;
-                Invoke("CoolDownEnd", inputCoolDown);
             }
         }
         else movingTime = 0;
@@ -107,7 +106,6 @@ public class PlayerController : MonoBehaviour
             else {
                 MovingToNextRoad("Left");
                 isSwitching = true;
-                isCoolDown = true;
             }
         }
         // move to right road or turning right
@@ -124,7 +122,6 @@ public class PlayerController : MonoBehaviour
             else {
                 MovingToNextRoad("Right");
                 isSwitching = true;
-                isCoolDown = true;
             }
         }
         // jumping
@@ -269,14 +266,22 @@ public class PlayerController : MonoBehaviour
     {
         GameObject Ghoul = GameObject.Find("Player/Ghoul");
 
-        Ghoul.transform.position += Vector3.forward * 5;
+        Ghoul.transform.position = transform.position - transform.forward * 3;
         Ghoul.GetComponent<Animation>().Stop();
         Ghoul.GetComponent<Animation>().Play("Attack2");
         Ghoul.GetComponent<Animation>().PlayQueued("Idle", QueueMode.CompleteOthers);
+
+        audioManager.Play("Zombie");
     }
 
     void Gameover() {
         Time.timeScale = 0;
         gameManager.gameover.SetActive(true);
+
+        audioManager.Stop("GameBgm");
+        audioManager.Play("Gameover");
+
+        gameManager.endSurvivalText.text = "Score : " + ((int)GameManager.survivalTime).ToString();
+        gameManager.endCoinText.text = "Coin : " + (GameManager.coinN).ToString();
     }
 }

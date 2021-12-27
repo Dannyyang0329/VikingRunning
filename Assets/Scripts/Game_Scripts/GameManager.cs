@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
 
     public Text coinText;
     public Text survivalText;
+    public Text endCoinText;
+    public Text endSurvivalText;
 
     public GameObject menu;
     public GameObject gameover;
